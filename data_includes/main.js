@@ -259,6 +259,7 @@ newText("tooslow", "Too slow!")
   .log("samediff", currentrow.samediff)
   .log("consonant", currentrow.consonant)
   .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
   .log( "RT"   ,getVar("RT") )
 )
 
@@ -440,6 +441,7 @@ newText("tooslow", "Too slow!")
   .log("samediff", currentrow.samediff)
   .log("consonant", currentrow.consonant)
   .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
   .log( "RT"   ,getVar("RT") )
     
 
@@ -560,6 +562,7 @@ newText("tooslow", "Too slow!")
   .log("samediff", currentrow.samediff)
   .log("consonant", currentrow.consonant)
   .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
   .log( "RT"   ,getVar("RT") )
     
 
@@ -680,6 +683,7 @@ newText("tooslow", "Too slow!")
   .log("samediff", currentrow.samediff)
   .log("consonant", currentrow.consonant)
   .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
   .log( "RT"   ,getVar("RT") )
     
 
@@ -801,6 +805,7 @@ newText("tooslow", "Too slow!")
   .log("samediff", currentrow.samediff)
   .log("consonant", currentrow.consonant)
   .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
   .log( "RT"   ,getVar("RT") )
     
 
@@ -941,6 +946,7 @@ newText("tooslow", "Too slow!")
   .log("samediff", currentrow.samediff)
   .log("consonant", currentrow.consonant)
   .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
   .log( "RT"   ,getVar("RT") )
     
 
