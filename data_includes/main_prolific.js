@@ -16,7 +16,11 @@ PennController.ResetPrefix(null) // Shorten command names (keep this)PennControl
 
 Sequence(
             "welcome",
-            // "demographic",
+            "staging",
+            "headphonetest",
+            "secondstaging",
+            "bluetoothcheck",
+            // // "demographic",
             "instructions",
             "preloadPractice",
             "preloadTest",
@@ -42,6 +46,48 @@ Sequence(
 //     .label( "preloadPractice" );
 // CheckPreloaded( startsWith("G") )
 //     .label( "preloadTest" );
+
+
+// The Farm's jQuery library is outdated, we need to polyfill a couple methods
+jQuery.prototype.on = function(...args) { return jQuery.prototype.bind.apply(this, args); }
+jQuery.prototype.prop = function(...args) { return jQuery.prototype.attr.apply(this, args); }
+// Let's dynamically load the HeadphoneCheck script
+// var HeadphoneCheckScriptTag = document.createElement("script");
+// HeadphoneCheckScriptTag.src = "https://s3.amazonaws.com/mcd-headphone-check/v1.0/src/HeadphoneCheck.min.js";
+// document.head.appendChild( HeadphoneCheckScriptTag );
+newTrial("headphonetest",
+    newButton("check", "Start Headphone Check")
+        .print()
+    ,
+    // This Canvas will contain the test itself
+    newCanvas("headphonecheck", 500,500)
+        .print()
+    ,
+    // The HeadphoneCheck module fills the element whose id is "hc-container"
+    newFunction( () => getCanvas("headphonecheck")._element.jQueryElement.attr("id", "hc-container") ).call()
+    ,
+    getButton("check")
+        .wait()
+        .remove()
+    ,
+    // Create this Text element, but don't print it just yet
+    newText("failure", "Sorry, you failed the headphone check. Please use this confirmation code to return the study:")
+    ,
+    // This is where it all happens
+    newFunction( () => {
+        $(document).on('hcHeadphoneCheckEnd', function(event, data) {
+            getCanvas("headphonecheck").remove()._runPromises();
+            if (data.didPass) getButton("dummy").click()._runPromises();
+            else getText("failure").print()._runPromises()
+        });
+        HeadphoneCheck.runHeadphoneCheck() 
+    }).call()
+    ,
+    // This is an invisible button that's clicked in the function above upon success
+    newButton("dummy").wait()
+)
+
+
 
 newTrial("welcome",
 
@@ -107,8 +153,7 @@ newTrial("instructions",
             PRESS the 'f' key if the pair of sounds are the same length.</p><p>
             PRESS the 'j' key if the pair of sounds are of different lengths.</p><p>
             Try to respond quickly and accurately. If you wait more than 2 seconds, you will not be able to respond.</p><p>
-            Before you begin, you will have a chance to practice and get familiar with the buttons.</p><p>
-            <strong>Please use wired headphones/earphones if possible and ensure that your volume is loud enough to comfortably and clearly hear the sounds.</strong></p>`)
+            Before you begin, you will have a chance to practice and get familiar with the buttons.</p><p>`)
             .css("font-family", "Helvetica, sans-serif")
             .css("font-size", "16px")
             .print("center at 50%", "middle at 50%")
@@ -123,7 +168,48 @@ newTrial("instructions",
 );
 
 
+newTrial("staging",
 
+    fullscreen(),
+    
+    newText(`<p>Welcome! Before you can begin the experiment, you must complete two checks to ensure you are using appropriate wired headphones or earphones.</p><p>
+            The first check will require you to listen to tones at different loudness and choose the softest.</p><p>
+            The second check will require you to listen for two words and then select the correct word pair.</p><p>
+            When you are ready, click the button to proceed to the first check.</p><p>
+            <strong>Please only use wired headphones or earphones.</strong></p>`)
+            .css("font-family", "Helvetica, sans-serif")
+            .css("font-size", "16px")
+            .print("center at 50%", "middle at 50%")
+    ,
+    newButton("Click when you are ready to begin")
+        .css("font-family", "Helvetica, sans-serif")
+        .css("font-size", "16px")
+        .center()
+        .print("center at 50%", "bottom at 80%")
+        .wait()
+        .remove()
+);
+
+
+newTrial("secondstaging",
+
+    fullscreen(),
+    
+    newText(`<p>Good job completing the first check!</p><p>
+            The second check will require you to listen for two words and then select the correct word pair.</p><p>
+            When you are ready, click the button to proceed to begin the second check. Be ready, as the sounds will play 1 second after pressing the button.</p>`)
+            .css("font-family", "Helvetica, sans-serif")
+            .css("font-size", "16px")
+            .print("center at 50%", "middle at 50%")
+    ,
+    newButton("Click when you are ready to begin")
+        .css("font-family", "Helvetica, sans-serif")
+        .css("font-size", "16px")
+        .center()
+        .print("center at 50%", "bottom at 80%")
+        .wait()
+        .remove()
+);
 
 
 newTrial("practiceintro",
@@ -311,7 +397,7 @@ newTrial("frictransition",
 newTrial("experimentstart",
 
     newText(`<p>Good work! Now that we're done with practice, let's start the experiment! </p>
-            <p>Please use wired headphones/earphones if possible, and ensure your volume is loud enough to comfortably and clearly hear the sounds.</p>
+            <p>Please ensure your volume is loud enough to comfortably and clearly hear the sounds.</p>
             <p> Remember to press 'f' if the sounds are the same length, and 'j' if the sounds are different length.
             </p>`)
             .css("font-family", "Helvetica, sans-serif")
@@ -884,6 +970,32 @@ newText("tooslow", "Too slow!")
     
         getKey("cur.response")    
             .test.pressed()
+            .success(getKey("cur.response").test.pressed(currentrow.correctresponse)
+            .success(newText("answer", "Correct! The answer is "+currentrow.samediff+`<p>
+                Press SPACEBAR to move on.</p>`)
+                .log()
+                .print()
+                .settings.center()
+                .cssContainer({"font-size": "140%", "color": "blue"})
+                .css("text-align","center")
+                ,
+                getCanvas("discrimination").remove(),
+                newKey("spacebar" , " ")
+                    .wait()
+                    )
+            .failure(newText("answer", "Incorrect! The answer is "+currentrow.samediff+`<p>
+                Press SPACEBAR to move on.</p>`)
+                .log()
+                .print()
+                .settings.center()
+                .cssContainer({"font-size": "140%", "color": "blue"})
+                .css("text-align","center")
+                ,
+                getCanvas("discrimination").remove(),
+                newKey("spacebar" , " ")
+                    .wait()
+                    )
+            )
             .failure(newText("slow", `<p>Too slow.</p><p>
                 Press SPACEBAR to move on.</p>`)
                 .log()
@@ -909,6 +1021,88 @@ newText("tooslow", "Too slow!")
 
 )
 
+
+Template("bluetoothcheck.csv",
+currentrow =>
+newTrial("bluetoothcheck",
+
+newText("tooslow", "Too slow!")
+            .css("font-family", "Helvetica, sans-serif")
+            .css("font-size", "24px")
+        ,
+        
+            
+        newTimer("wait", 1000)
+            .start()
+            .wait()
+        ,
+        newTimer("ISIbetween", 400)
+        ,
+        
+
+        newAudio("audio1",  currentrow.audio1).play()
+        .wait()
+        ,
+        getTimer("ISIbetween").start()
+        .wait()
+        ,
+        ( currentrow.audio2== currentrow.audio1?getAudio("audio1"):newAudio("audio2",  currentrow.audio2)).play()
+        .wait()
+        ,
+        getTimer("ISIbetween").start()
+        .wait()
+        ,
+        
+
+        newText("What programming language is PennController based on?")
+        .print()
+        ,
+        newScale("answer",  "cutter-brittle", "cutter-kettle", "mutter-pebble", "shutter-brittle")
+        .labelsPosition("right")
+        .print()
+        ,
+        newButton("Check my answer")
+        .print()
+        .wait( getScale("answer").test.selected() )
+        ,
+        getScale("answer")
+        .test.selected("cutter-brittle")
+        .success(
+        newText("Good job! You are using appropriate headphones/earphones. You may move on to the experiment!")
+            .print()
+            ,
+            getScale("answer").remove()
+            ,
+            newButton("Click when you are ready to begin")
+            .css("font-family", "Helvetica, sans-serif")
+            .css("font-size", "16px")
+            .center()
+            .print("center at 50%", "bottom at 80%")
+            .wait()
+            .remove()
+                )
+        .failure(
+        newText("Incorrect. You are not using appropriate headphones/earphones. Please use this confirmation code to return the study:")
+            .print()
+            .wait()
+        )
+        ,
+        getScale("answer")
+        .select("cutter-brittle")
+        .disable()
+        
+
+
+    )
+  .log( "presentation"   , currentrow.presentation)
+  .log("samediff", currentrow.samediff)
+  .log("consonant", currentrow.consonant)
+  .log("vowels", currentrow.vowels)
+  .log("recording", currentrow.recording)
+  .log( "RT"   ,getVar("RT") )
+    
+
+)
 
 
 
